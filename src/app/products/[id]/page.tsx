@@ -14,18 +14,15 @@ export default async function ProductPage({
 
   const adapter = AdapterFactory.getAdapter();
 
-  console.log("Clicked ID:", id);
+  console.log("Clicked Handle/ID:", id);
 
-  // TEMP FIX
-  // Instead of adapter.getProduct(id)
-  // fetch all products and find the matching one
-  const { products } = await adapter.listProducts({
-    limit: 100,
-  });
+  // Fetch product and related products in parallel
+  const [productResult, relatedResult] = await Promise.all([
+    adapter.listProducts({ handle: id, limit: 1 }),
+    adapter.listProducts({ limit: 4 }), // Just get some for now, ideally filter by category
+  ]);
 
-  const product = products.find(
-    (p) => p.id === id
-  );
+  const product = productResult.products[0];
 
   console.log("Product:", product);
 
@@ -33,7 +30,7 @@ export default async function ProductPage({
     notFound();
   }
 
-  const relatedProducts = products
+  const relatedProducts = relatedResult.products
     .filter((p) => p.id !== product.id)
     .slice(0, 4);
 

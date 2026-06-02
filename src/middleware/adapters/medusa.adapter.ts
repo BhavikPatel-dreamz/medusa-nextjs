@@ -5,40 +5,49 @@ import { HttpTypes } from "@medusajs/types";
 
 export class MedusaAdapter implements ICommerceAdapter {
   async listProducts(query?: any): Promise<{ products: Product[]; count: number }> {
-    const region_id = await this.getRegionId(query?.region_id);
+    try {
+      const region_id = await this.getRegionId(query?.region_id);
 
-    const medusaQuery: any = {
-      // Added *categories and *collection to get category/brand data
-      fields: "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,*categories,*collection",
-      ...query,
-      region_id,
-    };
+      const medusaQuery: any = {
+        // Added *categories and *collection to get category/brand data
+        fields: "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,*categories,*collection",
+        ...query,
+        region_id,
+      };
 
-    if (query?.category_id) {
-      medusaQuery.category_id = query.category_id;
-    }
-    if (query?.collection_id) {
-      medusaQuery.collection_id = query.collection_id;
-    }
-    if (query?.min_price) {
-      medusaQuery.min_price = query.min_price;
-    }
-    if (query?.max_price) {
-      medusaQuery.max_price = query.max_price;
-    }
-    if (query?.availability === "in_stock") {
-      medusaQuery["variants.inventory_quantity"] = { $gt: 0 };
-    }
+      if (query?.category_id) {
+        medusaQuery.category_id = query.category_id;
+      }
+      if (query?.collection_id) {
+        medusaQuery.collection_id = query.collection_id;
+      }
+      if (query?.min_price) {
+        medusaQuery.min_price = query.min_price;
+      }
+      if (query?.max_price) {
+        medusaQuery.max_price = query.max_price;
+      }
+      if (query?.availability === "in_stock") {
+        medusaQuery["variants.inventory_quantity"] = { $gt: 0 };
+      }
 
-    const { products, count } = await sdk.client.fetch<HttpTypes.StoreProductListResponse>(
-      `/store/products`,
-      { query: medusaQuery }
-    );
+      console.log("MedusaAdapter: listProducts fetching with query:", medusaQuery);
 
-    return {
-      products: products.map((p) => this.mapProduct(p)),
-      count,
-    };
+      const { products, count } = await sdk.client.fetch<HttpTypes.StoreProductListResponse>(
+        `/store/products`,
+        { query: medusaQuery }
+      );
+
+      console.log(`MedusaAdapter: listProducts fetched ${products.length} products`);
+
+      return {
+        products: products.map((p) => this.mapProduct(p)),
+        count,
+      };
+    } catch (error) {
+      console.error("MedusaAdapter: listProducts error:", error);
+      throw error;
+    }
   }
 
   async listCategories(): Promise<ProductCategory[]> {

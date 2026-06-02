@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import HeroSlider      from '@/components/home/heroSlidebar';
 import NewArrivals     from '@/components/home/NewArrivals';
 import SaleBanner  from '@/components/home/SaleBanner';
@@ -5,6 +6,7 @@ import Tsp from '@/components/home/tsp';
 import FeaturesBar from '@/components/home/FeaturesBar';
 import BlogSection from '@/components/home/BlogSection';
 import InstagramSection from '@/components/home/InstagramSection';
+import { NewArrivalsSkeleton } from '@/components/skeletons/HomeSkeletons';
 
 export default function HomePage() {
   return (  
@@ -12,7 +14,9 @@ export default function HomePage() {
       {/* 1. Full-screen hero with auto-sliding images */}
       <HeroSlider />
       {/* 2. New Arrivals section with 4 products in a grid */}
-      <NewArrivals />
+      <Suspense fallback={<NewArrivalsSkeleton />}>
+        <NewArrivals />
+      </Suspense>
       {/* 3. Sale banner with countdown timer */}
       <SaleBanner />
       {/* 4. Top Selling Products section with 1 large card + 4 small cards */}
