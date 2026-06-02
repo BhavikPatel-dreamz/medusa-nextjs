@@ -250,6 +250,57 @@ export class ShopifyAdapter implements ICommerceAdapter {
     }
   }
 
+  async getProductByHandle(handle: string, query?: any): Promise<Product | null> {
+    const shopifyQuery = `
+      query getProduct($handle: String!) {
+        product(handle: $handle) {
+          id
+          title
+          handle
+          description
+          createdAt
+          updatedAt
+          images(first: 5) {
+            edges {
+              node {
+                url
+              }
+            }
+          }
+          variants(first: 10) {
+            edges {
+              node {
+                id
+                title
+                sku
+                createdAt
+                updatedAt
+                price {
+                  amount
+                  currencyCode
+                }
+                quantityAvailable
+                currentlyNotInStock
+              }
+            }
+          }
+          options {
+            id
+            name
+            values
+          }
+        }
+      }
+    `;
+
+    try {
+      const data = await this.fetchShopify<any>(shopifyQuery, { handle });
+      return data.product ? this.mapProduct(data.product) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
   async createCart(data?: any): Promise<Cart> {
     const mutation = `
       mutation cartCreate {

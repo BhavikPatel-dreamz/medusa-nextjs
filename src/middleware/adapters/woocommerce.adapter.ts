@@ -29,6 +29,11 @@ export class WooCommerceAdapter implements ICommerceAdapter {
     return null;
   }
 
+  async getProductByHandle(handle: string, query?: any): Promise<Product | null> {
+    // Implement WooCommerce REST API call
+    return null;
+  }
+
   async createCart(data?: any): Promise<Cart> {
     throw new Error("Method not implemented.");
   }

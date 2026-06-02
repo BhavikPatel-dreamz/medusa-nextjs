@@ -109,6 +109,27 @@ export class MedusaAdapter implements ICommerceAdapter {
     }
   }
 
+  async getProductByHandle(handle: string, query?: any): Promise<Product | null> {
+    try {
+      const region_id = await this.getRegionId(query?.region_id);
+      const { products } = await sdk.client.fetch<HttpTypes.StoreProductListResponse>(
+        `/store/products`,
+        {
+          query: {
+            handle,
+            fields: "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,*categories,*collection",
+            region_id,
+            limit: 1,
+          },
+        }
+      );
+      return products[0] ? this.mapProduct(products[0]) : null;
+    } catch (error) {
+      console.error(`MedusaAdapter: getProductByHandle error for ${handle}:`, error);
+      return null;
+    }
+  }
+
   private async getRegionId(explicitRegionId?: string): Promise<string | undefined> {
     if (explicitRegionId) return explicitRegionId;
     try {

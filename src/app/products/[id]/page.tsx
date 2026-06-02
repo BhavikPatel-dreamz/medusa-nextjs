@@ -17,12 +17,10 @@ export default async function ProductPage({
   console.log("Clicked Handle/ID:", id);
 
   // Fetch product and related products in parallel
-  const [productResult, relatedResult] = await Promise.all([
-    adapter.listProducts({ handle: id, limit: 1 }),
-    adapter.listProducts({ limit: 4 }), // Just get some for now, ideally filter by category
+  const [product, relatedResult] = await Promise.all([
+    adapter.getProduct(id),
+    adapter.listProducts({ limit: 4 }), // Just get some for now
   ]);
-
-  const product = productResult.products[0];
 
   console.log("Product:", product);
 

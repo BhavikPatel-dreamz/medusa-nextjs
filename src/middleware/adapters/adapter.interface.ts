@@ -4,6 +4,7 @@ export interface ICommerceAdapter {
   // Products
   listProducts(query?: any): Promise<{ products: Product[]; count: number }>;
   getProduct(id: string, query?: any): Promise<Product | null>;
+  getProductByHandle(handle: string, query?: any): Promise<Product | null>;
   
   // Filters/Metadata
   listCategories(): Promise<ProductCategory[]>;
