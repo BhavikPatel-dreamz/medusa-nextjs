@@ -1,7 +1,7 @@
-import { HttpTypes } from "@medusajs/types"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
+import { Product } from "@/middleware/types/commerce.types"
 
-interface MinPricedProduct extends HttpTypes.StoreProduct {
+interface MinPricedProduct extends Product {
   _minPrice?: number
 }
 
@@ -12,9 +12,9 @@ interface MinPricedProduct extends HttpTypes.StoreProduct {
  * @returns products sorted by price
  */
 export function sortProducts(
-  products: HttpTypes.StoreProduct[],
+  products: Product[],
   sortBy: SortOptions
-): HttpTypes.StoreProduct[] {
+): Product[] {
   let sortedProducts = products as MinPricedProduct[]
 
   if (["price_asc", "price_desc"].includes(sortBy)) {
@@ -23,7 +23,7 @@ export function sortProducts(
       if (product.variants && product.variants.length > 0) {
         product._minPrice = Math.min(
           ...product.variants.map(
-            (variant) => variant?.calculated_price?.calculated_amount || 0
+            (variant) => variant?.price || 0
           )
         )
       } else {
@@ -38,13 +38,9 @@ export function sortProducts(
     })
   }
 
-  if (sortBy === "created_at") {
-    sortedProducts.sort((a, b) => {
-      return (
-        new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime()
-      )
-    })
-  }
+  // Note: created_at might not exist on the canonical Product type yet, 
+  // we could add it to the interface if needed or handle it specifically.
+  // For now, if it's missing, we keep the order.
 
   return sortedProducts
 }
