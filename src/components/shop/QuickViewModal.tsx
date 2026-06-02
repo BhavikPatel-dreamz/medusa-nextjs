@@ -1,0 +1,205 @@
+'use client';
+
+import Image from 'next/image';
+import { Product } from '@/middleware/types/commerce.types';
+import Link from "next/link";
+
+interface Props {
+  product: Product | null;
+  open: boolean;
+  onClose: () => void;
+  price: number;
+}
+
+export default function QuickViewModal({
+  product,
+  open,
+  onClose,
+  price,
+}: Props) {
+  if (!open || !product) return null;
+
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div
+        className="modal"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="left">
+          <Image
+            src={product.thumbnail!}
+            alt={product.title}
+            fill
+            style={{ objectFit: 'cover' }}
+          />
+        </div>
+
+        <div className="right">
+          <Link
+            href={`/products/${product.id}`}
+            className="topLink"
+          >
+            More about product →
+          </Link>
+
+          <div className="category">
+            {product.category}
+          </div>
+
+          <h2>{product.title}</h2>
+
+          <div className="stars">
+            ★ ★ ★ ★ ☆
+            <span>12 reviews</span>
+          </div>
+
+          <p className="desc">
+            Lorem ipsum dolor sit amet, consectetur
+            adipiscing elit. In ut ullamcorper leo,
+            eget euismod orci.
+          </p>
+
+          <div className="priceRow">
+            <div>
+              <p>QUANTITY</p>
+              <div>- 1 +</div>
+            </div>
+
+            <div>
+              <p>PRICE</p>
+              <div>${price}</div>
+            </div>
+          </div>
+
+          <div className="buttons">
+            <button className="outline">
+              ADD TO CART
+            </button>
+
+            <button className="filled">
+              BUY NOW
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal {
+    width: 1030px;
+    height: 640px;
+    background: white;
+    display: flex;
+  }
+
+  .left {
+    width: 50%;
+    position: relative;
+    background: #f7f6f4;
+  }
+
+  .right {
+    width: 50%;
+    padding: 38px;
+  }
+
+.topLink {
+  color: #c86f43;
+  font-size: 22px;
+  text-decoration: none;
+}
+
+  .category {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 18px;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+    margin: 0 0 25px;
+  }
+
+  .stars {
+    color: #d9ab76;
+    font-size: 24px;
+    margin-bottom: 28px;
+  }
+
+  .stars span {
+    color: #999;
+    font-size: 15px;
+    margin-left: 12px;
+  }
+
+  .desc {
+    color: #666;
+    line-height: 1.8;
+    font-size: 15px;
+    margin-bottom: 45px;
+  }
+
+  .priceRow {
+    display: flex;
+    gap: 70px;
+    margin-bottom: 60px;
+  }
+
+  .priceRow p {
+    font-size: 14px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  .priceRow div div {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 22px;
+  }
+
+  .outline,
+  .filled {
+    width: 210px;
+    height: 56px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s;
+  }
+
+  .outline {
+    background: white;
+    border: 1px solid #c97a4a;
+    color: #c97a4a;
+  }
+
+  .filled {
+    background: #c97a4a;
+    color: white;
+    border: none;
+  }
+
+  .outline:hover,
+  .filled:hover {
+    opacity: .9;
+  }
+`}</style>
+    </div>
+  );
+}

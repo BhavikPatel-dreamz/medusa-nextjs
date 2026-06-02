@@ -1,15 +1,15 @@
 import { sdk } from "@lib/config";
 import { ICommerceAdapter } from "./adapter.interface";
-import { Product, Cart, Order, Customer } from "../types/commerce.types";
+import { Product, Cart, Order, Customer, ProductCategory, ProductCollection, CommerceFilters } from "../types/commerce.types";
 import { HttpTypes } from "@medusajs/types";
 
 export class MedusaAdapter implements ICommerceAdapter {
   async listProducts(query?: any): Promise<{ products: Product[]; count: number }> {
     const region_id = await this.getRegionId(query?.region_id);
-    
-    // Normalize filters for Medusa
+
     const medusaQuery: any = {
-      fields: "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,",
+      // Added *categories and *collection to get category/brand data
+      fields: "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,*categories,*collection",
       ...query,
       region_id,
     };
@@ -26,17 +26,13 @@ export class MedusaAdapter implements ICommerceAdapter {
     if (query?.max_price) {
       medusaQuery.max_price = query.max_price;
     }
-
     if (query?.availability === "in_stock") {
-      // Simple approximation for Medusa v2
       medusaQuery["variants.inventory_quantity"] = { $gt: 0 };
     }
 
     const { products, count } = await sdk.client.fetch<HttpTypes.StoreProductListResponse>(
       `/store/products`,
-      {
-        query: medusaQuery,
-      }
+      { query: medusaQuery }
     );
 
     return {
@@ -93,7 +89,7 @@ export class MedusaAdapter implements ICommerceAdapter {
         `/store/products/${id}`,
         {
           query: {
-            fields: "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,",
+            fields: "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,*categories,*collection",
             region_id,
           },
         }
@@ -105,16 +101,13 @@ export class MedusaAdapter implements ICommerceAdapter {
   }
 
   private async getRegionId(explicitRegionId?: string): Promise<string | undefined> {
-    if (explicitRegionId) {
-      return explicitRegionId;
-    }
-
+    if (explicitRegionId) return explicitRegionId;
     try {
       const { regions } = await sdk.client.fetch<HttpTypes.StoreRegionListResponse>(`/store/regions`, {
         query: { limit: 1 },
       });
       return regions[0]?.id;
-    } catch (error) {
+    } catch {
       return undefined;
     }
   }
@@ -132,23 +125,18 @@ export class MedusaAdapter implements ICommerceAdapter {
         },
       });
       return this.mapCart(cart);
-    } catch (error) {
+    } catch {
       return null;
     }
   }
 
   async addItemToCart(cartId: string, variantId: string, quantity: number): Promise<Cart> {
-    const { cart } = await sdk.store.cart.createLineItem(cartId, {
-      variant_id: variantId,
-      quantity,
-    });
+    const { cart } = await sdk.store.cart.createLineItem(cartId, { variant_id: variantId, quantity });
     return this.mapCart(cart);
   }
 
   async updateItemInCart(cartId: string, itemId: string, quantity: number): Promise<Cart> {
-    const { cart } = await sdk.store.cart.updateLineItem(cartId, itemId, {
-      quantity,
-    });
+    const { cart } = await sdk.store.cart.updateLineItem(cartId, itemId, { quantity });
     return this.mapCart(cart);
   }
 
@@ -159,9 +147,7 @@ export class MedusaAdapter implements ICommerceAdapter {
 
   async listOrders(customerId: string): Promise<Order[]> {
     const { orders } = await sdk.client.fetch<HttpTypes.StoreOrderListResponse>(`/store/orders`, {
-      query: {
-        customer_id: customerId,
-      },
+      query: { customer_id: customerId },
     });
     return orders.map(this.mapOrder);
   }
@@ -170,7 +156,7 @@ export class MedusaAdapter implements ICommerceAdapter {
     try {
       const { order } = await sdk.client.fetch<HttpTypes.StoreOrderResponse>(`/store/orders/${id}`);
       return this.mapOrder(order);
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -179,7 +165,7 @@ export class MedusaAdapter implements ICommerceAdapter {
     try {
       const { customer } = await sdk.client.fetch<HttpTypes.StoreCustomerResponse>(`/store/customers/me`);
       return this.mapCustomer(customer);
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -192,6 +178,9 @@ export class MedusaAdapter implements ICommerceAdapter {
       description: p.description || undefined,
       thumbnail: p.thumbnail || undefined,
       images: p.images?.map((i: any) => i.url),
+      // ↓ Now mapped from the actual Medusa response
+      category: (p as any).categories?.[0]?.name ?? undefined,
+      collection: (p as any).collection?.title ?? undefined,
       variants: p.variants?.map((v: any) => ({
         id: v.id,
         title: v.title,

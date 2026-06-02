@@ -20,7 +20,7 @@ export default function FeaturesBar() {
   ];
 
   return (
-    <section className="border-y border-[#e4e4e4] bg-white">
+    <section className="border-y border-[#e4e4e4] bg-white mt-10">
       <div className="max-w-[1180px] mx-auto">
 
         <div className="grid grid-cols-3">
