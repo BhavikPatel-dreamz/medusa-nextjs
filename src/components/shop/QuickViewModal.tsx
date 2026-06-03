@@ -5,6 +5,7 @@ import { addToCart } from "@/lib/data/cart";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { convertToLocale } from "@lib/util/money";
+import { useRouter } from "next/navigation";
 
 
 const DEFAULT_COUNTRY_CODE = process.env.NEXT_PUBLIC_DEFAULT_REGION || "us";
@@ -22,13 +23,45 @@ export default function QuickViewModal({
   onClose,
   price,
 }: Props) {
+  const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
+  const [isBuying, setIsBuying] = useState(false);
 
   if (!open || !product) return null;
 
   const currencyCode = product.price?.currency_code ?? product.variants?.[0]?.currency_code ?? "USD";
   const formattedPrice = convertToLocale({ amount: price * quantity, currency_code: currencyCode });
+
+  const handleBuyNow = async () => {
+    setIsBuying(true);
+    try {
+      const variant = product?.variants?.[0];
+      const variantId = variant?.id;
+
+      if (!variantId) {
+        toast.error("No variant found for this product");
+        return;
+      }
+
+      const result = await addToCart({
+        variantId,
+        quantity,
+        countryCode: DEFAULT_COUNTRY_CODE,
+      });
+
+      if (result.success) {
+        router.push("/billing");
+      } else {
+        toast.error(result.error || "Unable to process request");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setIsBuying(false);
+    }
+  };
+
   const handleAddToCart = async () => {
     setIsAdding(true);
     try {
@@ -173,11 +206,17 @@ export default function QuickViewModal({
               )}
             </button>
 
-            <Link href="/billing" className="w-full">
-              <button className="w-full h-[62px] bg-[#c97a4a] text-white text-[17px] font-bold hover:opacity-90 transition">
-                BUY NOW
-              </button>
-            </Link>
+            <button
+              className="w-full h-[62px] bg-[#c97a4a] text-white text-[17px] font-bold hover:opacity-90 transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleBuyNow}
+              disabled={isBuying}
+            >
+              {isBuying ? (
+                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                "BUY NOW"
+              )}
+            </button>
           </div>
         </div>
       </div>
