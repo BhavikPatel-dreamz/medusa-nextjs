@@ -37,14 +37,14 @@ export default async function ProductPage({
       id: 1,
       name: "John Smith",
       date: "2026-02-10",
-      avatar: "/images/review/person1.png",
+      avatar: "/review1.jpg",
       comment: "Amazing product",
     },
     {
       id: 2,
       name: "Sarah Parker",
       date: "2026-03-05",
-      avatar: "/images/review/person2.png",
+      avatar: "/review2.jpg",
       comment: "Very good quality and fast delivery.",
     },
   ];
@@ -57,6 +57,11 @@ export default async function ProductPage({
           product.price?.amount ??
           product.variants?.[0]?.price ??
           0
+        }
+        currencyCode={
+          product.price?.currency_code ??
+          product.variants?.[0]?.currency_code ??
+          "USD"
         }
       />
 
