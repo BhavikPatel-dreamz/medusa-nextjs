@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { updateLineItem, deleteLineItem } from "@lib/data/cart";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -12,7 +12,7 @@ interface CartPageProps {
 
 export default function CartPage({ cart }: CartPageProps) {
   const router = useRouter();
-  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [loadingAction, setLoadingAction] = useState<{ id: string, type: 'update' | 'delete' } | null>(null);
 
   // Handle null cart safely
   if (!cart) {
@@ -48,7 +48,7 @@ export default function CartPage({ cart }: CartPageProps) {
     currentQty: number
   ) => {
     try {
-      setLoadingId(lineId);
+      setLoadingAction({ id: lineId, type: 'update' });
 
       await updateLineItem({
         lineId,
@@ -59,7 +59,7 @@ export default function CartPage({ cart }: CartPageProps) {
     } catch (error) {
       console.error("Increase Error:", error);
     } finally {
-      setLoadingId(null);
+      setLoadingAction(null);
     }
   };
 
@@ -70,7 +70,7 @@ export default function CartPage({ cart }: CartPageProps) {
     try {
       if (currentQty <= 1) return;
 
-      setLoadingId(lineId);
+      setLoadingAction({ id: lineId, type: 'update' });
 
       await updateLineItem({
         lineId,
@@ -81,7 +81,7 @@ export default function CartPage({ cart }: CartPageProps) {
     } catch (error) {
       console.error("Decrease Error:", error);
     } finally {
-      setLoadingId(null);
+      setLoadingAction(null);
     }
   };
 
@@ -89,7 +89,7 @@ export default function CartPage({ cart }: CartPageProps) {
     lineId: string
   ) => {
     try {
-      setLoadingId(lineId);
+      setLoadingAction({ id: lineId, type: 'delete' });
 
       await deleteLineItem(lineId);
 
@@ -97,7 +97,7 @@ export default function CartPage({ cart }: CartPageProps) {
     } catch (error) {
       console.error("Delete Error:", error);
     } finally {
-      setLoadingId(null);
+      setLoadingAction(null);
     }
   };
 
@@ -162,7 +162,7 @@ export default function CartPage({ cart }: CartPageProps) {
                 {/* Quantity */}
                 <div className="flex items-center gap-6">
                   <button
-                    disabled={loadingId === item.lineId}
+                    disabled={loadingAction?.id === item.lineId}
                     onClick={() =>
                       decreaseQuantity(
                         item.lineId,
@@ -174,12 +174,18 @@ export default function CartPage({ cart }: CartPageProps) {
                     -
                   </button>
 
-                  <span className="text-[18px] font-semibold min-w-[20px] text-center">
-                    {item.quantity}
-                  </span>
+                  <div className="min-w-[40px] flex justify-center">
+                    {loadingAction?.id === item.lineId && loadingAction.type === 'update' ? (
+                      <Loader2 className="animate-spin text-[#c97a4a]" size={20} />
+                    ) : (
+                      <span className="text-[18px] font-semibold text-center">
+                        {item.quantity}
+                      </span>
+                    )}
+                  </div>
 
                   <button
-                    disabled={loadingId === item.lineId}
+                    disabled={loadingAction?.id === item.lineId}
                     onClick={() =>
                       increaseQuantity(
                         item.lineId,
@@ -199,15 +205,20 @@ export default function CartPage({ cart }: CartPageProps) {
 
                 {/* Remove */}
                 <button
-                  disabled={loadingId === item.lineId}
+                  disabled={loadingAction?.id === item.lineId}
                   onClick={() =>
                     removeItem(item.lineId)
                   }
+                  className="w-7 h-7 flex items-center justify-center disabled:opacity-50"
                 >
-                  <X
-                    size={28}
-                    className="text-[#999] hover:text-[#c97a4a]"
-                  />
+                  {loadingAction?.id === item.lineId && loadingAction.type === 'delete' ? (
+                    <Loader2 className="animate-spin text-[#c97a4a]" size={20} />
+                  ) : (
+                    <X
+                      size={28}
+                      className="text-[#999] hover:text-[#c97a4a]"
+                    />
+                  )}
                 </button>
               </div>
             ))}
