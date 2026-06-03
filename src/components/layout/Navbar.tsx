@@ -144,9 +144,11 @@ export default async function Navbar() {
             <Search size={22} strokeWidth={1.8} />
           </button>
 
-          <button className="hover:text-[#c47c48] transition-colors duration-300">
+           <Link
+            href="/login"
+            className="hover:text-[#c47c48] transition-colors duration-300">
             <User size={22} strokeWidth={1.8} />
-          </button>
+          </Link>
 
           <Link
             href="/wishlist"

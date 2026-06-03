@@ -7,10 +7,13 @@ import FeaturesBar from '@/components/home/FeaturesBar';
 import BlogSection from '@/components/home/BlogSection';
 import InstagramSection from '@/components/home/InstagramSection';
 import { NewArrivalsSkeleton } from '@/components/skeletons/HomeSkeletons';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 
 export default function HomePage() {
   return (  
     <>
+      <Navbar />
       {/* 1. Full-screen hero with auto-sliding images */}
       <HeroSlider />
       {/* 2. New Arrivals section with 4 products in a grid */}
@@ -27,6 +30,7 @@ export default function HomePage() {
       <BlogSection />
       {/* 7. Instagram feed with 6 images in a grid */}
       <InstagramSection />
+      <Footer />
     </>
   );
 }

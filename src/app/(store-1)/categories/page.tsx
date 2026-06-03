@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import CategoryHero from "@/components/categories/CategoryHero";
 import CategoryGrid from "@/components/categories/CategoryGrid";
 import ProductCarouselWrapper from "@/components/categories/ProductCarouselWrapper";
-import CategoriesLoading from "./loading";
 
 export const metadata = {
   title: "Categories | Flatlogic",
@@ -11,7 +10,7 @@ export const metadata = {
 
 export default function CategoriesPage() {
   return (
-    <Suspense fallback={<CategoriesLoading />}>
+    <Suspense>
       <CategoriesPageContent />
     </Suspense>
   );

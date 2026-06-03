@@ -133,17 +133,17 @@ export default function Footer() {
 
             <ul className="space-y-4">
               {[
-                'Sign In',
-                'View Cart',
-                'Order Tracking',
-                'Help & Support',
+                { label: 'Sign In', href: '/login' },
+                { label: 'View Cart', href: '/cart' },
+                { label: 'Order Tracking', href: '/' },
+                { label: 'Help & Support', href: '/' },
               ].map((item) => (
-                <li key={item}>
+                <li key={item.label}>
                   <Link
-                    href="/"
+                    href={item.href}
                     className="text-[#5f5f5f] text-[16px] hover:text-[#c47c48] transition-colors duration-300"
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 </li>
               ))}

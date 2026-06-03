@@ -1,6 +1,8 @@
 import { getBaseURL } from "@lib/util/env"
 import { Metadata } from "next"
 import "styles/globals.css";
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 import { Montserrat } from "next/font/google";
 import Toaster from '@/components/layout/Toaster';
 
@@ -16,12 +18,12 @@ export const metadata: Metadata = {
 export default function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
   return (
-    <html lang="en">
-      <body className={montserrat.className}>
+    <div className={montserrat.className}>
+      <Navbar />
 
-        <main>{children}</main>
-        <Toaster />
-      </body>
-    </html>
+      <main>{children}</main>
+      <Toaster />
+      <Footer />
+    </div >
   )
 }

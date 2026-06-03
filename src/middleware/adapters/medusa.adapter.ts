@@ -209,40 +209,41 @@ export class MedusaAdapter implements ICommerceAdapter {
   }
 
   private mapProduct(p: HttpTypes.StoreProduct): Product {
-    return {
-      id: p.id,
-      title: p.title,
-      handle: p.handle,
-      description: p.description || undefined,
-      thumbnail: p.thumbnail || undefined,
-      images: p.images?.map((i: any) => i.url),
-      // ↓ Now mapped from the actual Medusa response
-      category: (p as any).categories?.[0]?.name ?? undefined,
-      collection: (p as any).collection?.title ?? undefined,
-      variants: p.variants?.map((v: any) => ({
-        id: v.id,
-        title: v.title,
-        sku: v.sku || undefined,
-        price: v.calculated_price?.calculated_amount || 0,
-        currency_code: v.calculated_price?.currency_code || "USD",
-        inventory_quantity: v.inventory_quantity || 0,
-        manage_inventory: !!v.manage_inventory,
-        options: v.options?.reduce((acc: any, opt: any) => {
-          acc[opt.option_id] = opt.value;
-          return acc;
-        }, {}),
-        created_at: v.created_at || undefined,
-        updated_at: v.updated_at || undefined,
-      })) || [],
-      options: p.options?.map((o: any) => ({
-        id: o.id,
-        title: o.title,
-        values: o.values?.map((v: any) => v.value) || [],
-      })),
-      created_at: p.created_at || undefined,
-      updated_at: p.updated_at || undefined,
-    };
-  }
+  return {
+    id: p.id,
+    title: p.title,
+    handle: p.handle,
+    description: p.description || undefined,
+    thumbnail: p.thumbnail || undefined,
+    images: p.images?.map((i: any) => i.url),
+    category: (p as any).categories?.[0]?.name ?? undefined,
+    category_id: (p as any).categories?.[0]?.id ?? undefined,       // ← add
+    category_handle: (p as any).categories?.[0]?.handle ?? undefined, // ← add
+    collection: (p as any).collection?.title ?? undefined,
+    variants: p.variants?.map((v: any) => ({
+      id: v.id,
+      title: v.title,
+      sku: v.sku || undefined,
+      price: v.calculated_price?.calculated_amount || 0,
+      currency_code: v.calculated_price?.currency_code || "USD",
+      inventory_quantity: v.inventory_quantity || 0,
+      manage_inventory: !!v.manage_inventory,
+      options: v.options?.reduce((acc: any, opt: any) => {
+        acc[opt.option_id] = opt.value;
+        return acc;
+      }, {}),
+      created_at: v.created_at || undefined,
+      updated_at: v.updated_at || undefined,
+    })) || [],
+    options: p.options?.map((o: any) => ({
+      id: o.id,
+      title: o.title,
+      values: o.values?.map((v: any) => v.value) || [],
+    })),
+    created_at: p.created_at || undefined,
+    updated_at: p.updated_at || undefined,
+  };
+}
 
   private mapCart(c: HttpTypes.StoreCart): Cart {
     return {

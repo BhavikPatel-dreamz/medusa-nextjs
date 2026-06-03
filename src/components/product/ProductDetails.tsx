@@ -117,7 +117,7 @@ export default function ProductDetails({
                     <span>&gt;</span>
 
                     <Link
-                        href={`/category/${product.category_id}`}
+                        href={`/categories/${product.category_handle}`}
                         className="hover:text-[#c87a4c]"
                     >
                         {product.category}

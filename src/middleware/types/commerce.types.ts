@@ -7,8 +7,10 @@ export interface Product {
   images?: string[];
   variants: ProductVariant[];
   options?: ProductOption[];
-  category?: string;      // ← from p.categories[0]?.name
-  collection?: string;    // ← from p.collection?.title
+  category?: string;
+  category_id?: string;      
+  category_handle?: string;  
+  collection?: string;
   price?: {
     amount: number;
     currency_code: string;

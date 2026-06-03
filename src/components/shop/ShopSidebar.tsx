@@ -34,20 +34,46 @@ export default function ShopSidebar({
     onFiltersChange({ ...filters, brands: toggle(filters.brands, title) });
 
   const handleAvailability = (avail: string) =>
-    onFiltersChange({ ...filters, availability: toggle(filters.availability, avail) });
+    onFiltersChange({
+      ...filters,
+      availability: filters.availability[0] === avail ? [] : [avail]
+    });
 
   const formattedMin = convertToLocale({ amount: filters.priceMin, currency_code: currencyCode });
   const formattedMax = convertToLocale({ amount: filters.priceMax, currency_code: currencyCode });
 
   return (
+
     <aside className="w-[310px] min-w-[310px] px-[32px] py-[42px] bg-[#fafafa] border-r border-[#ececec] flex-shrink-0">
 
       {/* Categories */}
       {categories.length > 0 && (
         <div className="mb-12">
-          <h3 className="text-[13px] font-bold tracking-[0.14em] uppercase text-[#222] mb-[26px]">
-            Categories
-          </h3>
+          <div className="flex items-center justify-between mb-[26px]">
+            <h3 className="text-[13px] font-bold tracking-[0.14em] uppercase text-[#222]">
+              Categories
+            </h3>
+            {(filters.categories.length > 0 ||
+              filters.brands.length > 0 ||
+              filters.availability.length > 0 ||
+              filters.priceMin > 0 ||
+              filters.priceMax < priceMaxLimit) && (
+                <button
+                  onClick={() =>
+                    onFiltersChange({
+                      categories: [],
+                      brands: [],
+                      priceMin: 0,
+                      priceMax: priceMaxLimit,
+                      availability: [],
+                    })
+                  }
+                  className="text-[11px] text-[#c97a4a] hover:underline font-medium"
+                >
+                  Clear all
+                </button>
+              )}
+          </div>
           {categories.map((cat) => (
             <label key={cat.id} className="flex items-center gap-3 mb-[18px] cursor-pointer">
               <input
@@ -148,7 +174,7 @@ export default function ShopSidebar({
         {AVAILABILITY.map((avail) => (
           <label key={avail} className="flex items-center gap-3 mb-[18px] cursor-pointer">
             <input
-              type="checkbox"
+              type="radio"
               checked={filters.availability.includes(avail)}
               onChange={() => handleAvailability(avail)}
               className="w-5 h-5 cursor-pointer accent-[#c97a4a]"
