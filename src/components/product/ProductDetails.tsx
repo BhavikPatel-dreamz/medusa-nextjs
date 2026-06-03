@@ -4,6 +4,7 @@ import Link from "next/link";
 import { addToCart } from "@/lib/data/cart";
 import toast from "react-hot-toast";
 import { useState } from "react";
+import { convertToLocale } from "@lib/util/money";
 
 
 const DEFAULT_COUNTRY_CODE = process.env.NEXT_PUBLIC_DEFAULT_REGION || "us";
@@ -11,12 +12,19 @@ const DEFAULT_COUNTRY_CODE = process.env.NEXT_PUBLIC_DEFAULT_REGION || "us";
 export default function ProductDetails({
     product,
     price,
+    currencyCode,
 }: {
     product: any;
     price: number;
+    currencyCode: string;
 }) {
     const [quantity, setQuantity] = useState(1);
     const [isAdding, setIsAdding] = useState(false);
+
+    const formattedPrice = convertToLocale({
+        amount: price * quantity,
+        currency_code: currencyCode,
+    });
 
     const handleAddToCart = async () => {
         setIsAdding(true);
@@ -168,7 +176,7 @@ export default function ProductDetails({
                                 </p>
 
                                 <p className="font-semibold text-[22px]">
-                                    ${(price * quantity).toFixed(2)}
+                                    {formattedPrice}
                                 </p>
                             </div>
 

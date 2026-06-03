@@ -58,6 +58,11 @@ export default async function ProductPage({
           product.variants?.[0]?.price ??
           0
         }
+        currencyCode={
+          product.price?.currency_code ??
+          product.variants?.[0]?.currency_code ??
+          "USD"
+        }
       />
 
       <ProductReviews reviews={reviews} />

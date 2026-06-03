@@ -68,3 +68,35 @@ export const getRegion = async (countryCode: string) => {
     return null
   }
 }
+
+export const getRegionForCountryCode = async (countryCode: string) => {
+  try {
+    const normalizedCountryCode = countryCode?.toLowerCase()
+
+    if (!normalizedCountryCode) {
+      return null
+    }
+
+    if (regionMap.has(normalizedCountryCode)) {
+      return regionMap.get(normalizedCountryCode) ?? null
+    }
+
+    const regions = await listRegions()
+
+    if (!regions?.length) {
+      return null
+    }
+
+    for (const region of regions) {
+      for (const country of region.countries || []) {
+        if (country?.iso_2) {
+          regionMap.set(country.iso_2.toLowerCase(), region)
+        }
+      }
+    }
+
+    return regionMap.get(normalizedCountryCode) ?? null
+  } catch {
+    return null
+  }
+}

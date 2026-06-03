@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Product } from '@/middleware/types/commerce.types';
 import { AdapterFactory } from '@/middleware/factory/adapter.factory';
+import { convertToLocale } from '@lib/util/money';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=70';
 
@@ -17,17 +18,19 @@ export default async function NewArrivals() {
     products = [];
   }
 
-  // Get lowest price from variants
-  const getPrice = (product: Product): string => {
+  // Get formatted price
+  const getFormattedPrice = (product: Product): string => {
+    const currencyCode = product.price?.currency_code ?? product.variants?.[0]?.currency_code ?? "USD";
+    
     if (product.price) {
-      return product.price.amount.toFixed(2);
+      return convertToLocale({ amount: product.price.amount, currency_code: currencyCode });
     }
 
     const variantPrices = product.variants?.map((v) => v.price) ?? [];
     if (!variantPrices.length) return 'N/A';
     const min = Math.min(...variantPrices);
 
-    return min.toFixed(2);
+    return convertToLocale({ amount: min, currency_code: currencyCode });
   };
 
   return (
@@ -76,7 +79,7 @@ export default async function NewArrivals() {
                 </h3>
 
                 {/* Price */}
-                <p className="text-base text-gray-900">${getPrice(product)}</p>
+                <p className="text-base text-gray-900">{getFormattedPrice(product)}</p>
               </Link>
             ))}
           </div>

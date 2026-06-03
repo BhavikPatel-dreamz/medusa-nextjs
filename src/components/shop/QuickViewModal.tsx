@@ -4,6 +4,7 @@ import Link from "next/link";
 import { addToCart } from "@/lib/data/cart";
 import toast from "react-hot-toast";
 import { useState } from "react";
+import { convertToLocale } from "@lib/util/money";
 
 
 const DEFAULT_COUNTRY_CODE = process.env.NEXT_PUBLIC_DEFAULT_REGION || "us";
@@ -26,6 +27,8 @@ export default function QuickViewModal({
 
   if (!open || !product) return null;
 
+  const currencyCode = product.price?.currency_code ?? product.variants?.[0]?.currency_code ?? "USD";
+  const formattedPrice = convertToLocale({ amount: price * quantity, currency_code: currencyCode });
   const handleAddToCart = async () => {
     setIsAdding(true);
     try {
@@ -152,7 +155,7 @@ export default function QuickViewModal({
               </p>
 
               <p className="font-semibold text-[22px]">
-                ${(price * quantity).toFixed(2)}
+                {formattedPrice}
               </p>
             </div>
           </div>

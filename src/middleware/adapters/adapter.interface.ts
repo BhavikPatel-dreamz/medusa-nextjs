@@ -18,6 +18,9 @@ export interface ICommerceAdapter {
   updateItemInCart(cartId: string, itemId: string, quantity: number): Promise<Cart>;
   removeItemFromCart(cartId: string, itemId: string): Promise<Cart>;
 
+  // Checkout
+  checkout(cartId: string): Promise<Order>;
+
   // Orders
   listOrders(customerId: string): Promise<Order[]>;
   getOrder(id: string): Promise<Order | null>;

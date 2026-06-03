@@ -175,6 +175,14 @@ export class MedusaAdapter implements ICommerceAdapter {
     return this.mapCart(cart as any);
   }
 
+  async checkout(cartId: string): Promise<Order> {
+    const response = await sdk.store.cart.complete(cartId);
+    if (response.type === "order") {
+      return this.mapOrder(response.order);
+    }
+    throw new Error(response.error?.message || "Failed to complete checkout. Cart might be incomplete.");
+  }
+
   async listOrders(customerId: string): Promise<Order[]> {
     const { orders } = await sdk.client.fetch<HttpTypes.StoreOrderListResponse>(`/store/orders`, {
       query: { customer_id: customerId },

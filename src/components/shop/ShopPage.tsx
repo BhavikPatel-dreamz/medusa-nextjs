@@ -111,6 +111,10 @@ export default function ShopPage({ products, categories, collections }: ShopPage
     return result;
   }, [products, filters, sortBy]);
 
+  const currencyCode = useMemo(() => {
+    return products[0]?.price?.currency_code ?? products[0]?.variants?.[0]?.currency_code ?? "USD";
+  }, [products]);
+
   return (
     <div className="flex bg-[#fafafa] min-h-screen max-w-[1600px] mx-auto">
       <ShopSidebar
@@ -119,6 +123,7 @@ export default function ShopPage({ products, categories, collections }: ShopPage
         categories={categories}
         collections={collections}
         priceMaxLimit={priceMaxLimit}
+        currencyCode={currencyCode}
       />
       <ShopProductGrid
         products={filteredProducts}

@@ -9,6 +9,7 @@ import QuickViewModal from './QuickViewModal';
 import { addToCart } from "@/lib/data/cart";
 import { useWishlist } from '@/lib/wishlist';
 import toast from "react-hot-toast";
+import { convertToLocale } from "@lib/util/money";
 
 const PLACEHOLDER =
   'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=70';
@@ -26,7 +27,8 @@ export default function ShopProductCard({ product, price }: ShopProductCardProps
 
   const wishlisted = isWishlisted(product.id);
   const thumbnail = product.thumbnail || PLACEHOLDER;
-  const formattedPrice = `$${price.toFixed(2)}`;
+  const currencyCode = product.price?.currency_code ?? product.variants?.[0]?.currency_code ?? "USD";
+  const formattedPrice = convertToLocale({ amount: price, currency_code: currencyCode });
 
   const handleWishlist = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();

@@ -1,12 +1,28 @@
-"use client";
-
-import { useState } from "react";
 import PaymentMethods from "./PaymentMethods";
 import BillingForm from "./BillingForm";
 import CreditCardPanel from "./CreditCardPanel";
+import BillingCheckoutForm from "./BillingCheckoutForm";
+import { listRegions } from "@lib/data/regions";
 
-export default function BillingPage() {
-  const [paymentMethod, setPaymentMethod] = useState("credit-card");
+type BillingPageProps = {
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default async function BillingPage({ searchParams }: BillingPageProps) {
+  const paymentMethod = (searchParams.payment_method as string) || "credit-card";
+  const regions = await listRegions();
+  const countryOptions =
+    regions?.flatMap((region) =>
+      region.countries?.map((country) => ({
+        value: country.iso_2 ?? "",
+        label: country.display_name || country.name || country.iso_2?.toUpperCase() || "",
+      })) || []
+    ).filter((country) => country.value) || [];
+  const configuredDefaultCountry = process.env.NEXT_PUBLIC_DEFAULT_REGION || "in";
+  const defaultCountryCode =
+    countryOptions.find((country) => country.value === configuredDefaultCountry)?.value ||
+    countryOptions[0]?.value ||
+    configuredDefaultCountry;
 
   return (
     <main className="bg-white min-h-screen">
@@ -43,20 +59,16 @@ export default function BillingPage() {
 
         {/* Payment Methods */}
         <div className="mb-8">
-          <PaymentMethods
-            selected={paymentMethod}
-            onChange={setPaymentMethod}
-          />
+          <PaymentMethods selected={paymentMethod} />
         </div>
 
-        {/* Forms */}
-        <div
-          className="grid gap-8"
-          style={{ gridTemplateColumns: "1fr 320px" }}
-        >
-          <BillingForm />
+        <BillingCheckoutForm>
+          <BillingForm
+            countryOptions={countryOptions}
+            defaultCountryCode={defaultCountryCode}
+          />
           <CreditCardPanel paymentMethod={paymentMethod} />
-        </div>
+        </BillingCheckoutForm>
 
       </div>
     </main>

@@ -175,7 +175,7 @@ export default function CartPage({ cart }: CartPageProps) {
                   </button>
 
                   <div className="min-w-[40px] flex justify-center">
-                    {loadingAction?.id === item.lineId && loadingAction.type === 'update' ? (
+                    {loadingAction?.id === item.lineId && loadingAction?.type === 'update' ? (
                       <Loader2 className="animate-spin text-[#c97a4a]" size={20} />
                     ) : (
                       <span className="text-[18px] font-semibold text-center">
@@ -211,7 +211,7 @@ export default function CartPage({ cart }: CartPageProps) {
                   }
                   className="w-7 h-7 flex items-center justify-center disabled:opacity-50"
                 >
-                  {loadingAction?.id === item.lineId && loadingAction.type === 'delete' ? (
+                  {loadingAction?.id === item.lineId && loadingAction?.type === 'delete' ? (
                     <Loader2 className="animate-spin text-[#c97a4a]" size={20} />
                   ) : (
                     <X
@@ -273,7 +273,10 @@ export default function CartPage({ cart }: CartPageProps) {
               </div>
             </div>
 
-            <button className="w-full h-[62px] bg-[#c97a4a] text-white text-[17px] font-bold hover:opacity-90 transition"  onClick={() => router.push('/billing')}>
+            <button
+              onClick={() => router.push("/billing")}
+              className="w-full h-[62px] bg-[#c97a4a] text-white text-[17px] font-bold hover:opacity-90 transition"
+            >
               CHECK OUT
             </button>
           </div>

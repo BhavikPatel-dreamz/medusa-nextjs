@@ -1,6 +1,17 @@
-"use client";
+type CountryOption = {
+  value: string
+  label: string
+}
 
-export default function BillingForm() {
+type BillingFormProps = {
+  countryOptions: CountryOption[]
+  defaultCountryCode: string
+}
+
+export default function BillingForm({
+  countryOptions,
+  defaultCountryCode,
+}: BillingFormProps) {
   return (
     <div>
       <h2
@@ -12,33 +23,34 @@ export default function BillingForm() {
 
       <div className="space-y-5">
         {/* First Name — full width */}
-        <Field label="First Name*" />
+        <Field label="First Name*" name="first_name" />
 
         {/* Country + City */}
         <div className="grid grid-cols-2 gap-4">
           <SelectField
             label="Country*"
-            options={["Afghanistan", "United States", "United Kingdom", "India"]}
-            defaultValue="Afghanistan"
+            name="country_code"
+            options={countryOptions}
+            defaultValue={defaultCountryCode}
           />
-          <Field label="City*" />
+          <Field label="City*" name="city" />
         </div>
 
         {/* Street + Apt/Suite */}
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Street" />
-          <Field label="Apt / Suite / Other" />
+          <Field label="Street" name="address_1" />
+          <Field label="Apt / Suite / Other" name="address_2" />
         </div>
 
         {/* Postcode + Phone + ZIP */}
         <div className="grid grid-cols-3 gap-4">
-          <Field label="Postcode" />
-          <Field label="Phone" placeholder="+ 375 (29)" />
-          <Field label="ZIP Code" />
+          <Field label="Postcode" name="postal_code" />
+          <Field label="Phone" name="phone" placeholder="+ 375 (29)" />
+          <Field label="ZIP Code" name="zip" />
         </div>
 
         {/* Email — full width */}
-        <Field label="Email*" type="email" />
+        <Field label="Email*" name="email" type="email" />
       </div>
     </div>
   );
@@ -46,10 +58,12 @@ export default function BillingForm() {
 
 function Field({
   label,
+  name,
   type = "text",
   placeholder = "",
 }: {
   label: string;
+  name: string;
   type?: string;
   placeholder?: string;
 }) {
@@ -63,7 +77,9 @@ function Field({
       </label>
       <input
         type={type}
+        name={name}
         placeholder={placeholder}
+        required
         className="w-full border border-[#e0e0e0] bg-white px-3 outline-none focus:border-[#c27a4a] transition"
         style={{ height: "44px", fontSize: "14px" }}
       />
@@ -73,11 +89,13 @@ function Field({
 
 function SelectField({
   label,
+  name,
   options,
   defaultValue,
 }: {
   label: string;
-  options: string[];
+  name: string;
+  options: CountryOption[];
   defaultValue?: string;
 }) {
   return (
@@ -90,11 +108,12 @@ function SelectField({
       </label>
       <select
         defaultValue={defaultValue}
+        name={name}
         className="w-full border border-[#e0e0e0] bg-white px-3 outline-none focus:border-[#c27a4a] transition appearance-auto"
         style={{ height: "44px", fontSize: "14px", color: "#444" }}
       >
-        {options.map((o) => (
-          <option key={o}>{o}</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>{option.label}</option>
         ))}
       </select>
     </div>

@@ -13,7 +13,7 @@ import {
   removeCartId,
   setCartId,
 } from "./cookies"
-import { getRegion } from "./regions"
+import { getRegion, getRegionForCountryCode } from "./regions"
 import { getLocale } from "@lib/data/locale-actions"
 
 /**
@@ -108,6 +108,9 @@ export async function updateCart(data: HttpTypes.StoreUpdateCart) {
 
       const fulfillmentCacheTag = await getCacheTag("fulfillment")
       revalidateTag(fulfillmentCacheTag)
+
+      const shippingOptionsCacheTag = await getCacheTag("shippingOptions")
+      revalidateTag(shippingOptionsCacheTag)
 
       return cart
     })
@@ -407,6 +410,87 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
   )
 }
 
+export async function checkoutAction(currentState: unknown, formData: FormData) {
+  try {
+    const cartId = await getCartId()
+    if (!cartId) throw new Error("No cart found")
+
+    const email = formData.get("email") as string
+    const first_name = formData.get("first_name") as string
+    const country_code = (formData.get("country_code") as string)?.toLowerCase()
+    const city = formData.get("city") as string
+    const address_1 = formData.get("address_1") as string
+    const address_2 = formData.get("address_2") as string
+    const postal_code = formData.get("postal_code") as string
+    const phone = formData.get("phone") as string
+
+    const address = {
+      first_name,
+      last_name: first_name, // Using first_name as last_name for simplicity if not provided
+      address_1,
+      address_2,
+      city,
+      postal_code,
+      country_code,
+      phone,
+    }
+
+    const headers = {
+      ...(await getAuthHeaders()),
+    }
+
+    const region = await getRegionForCountryCode(country_code)
+
+    if (!region) {
+      return `We do not ship to ${country_code?.toUpperCase() || "that country"}. Please choose a supported country.`
+    }
+
+    // 1. Update Cart with Email, Address and Region
+    await updateCart({
+      email,
+      shipping_address: address,
+      billing_address: address,
+      region_id: region?.id,
+    })
+
+    // 2. Set Shipping Method
+    const shippingOptionsRes = await listCartOptions()
+    if (shippingOptionsRes.shipping_options?.length > 0) {
+      const optionId = shippingOptionsRes.shipping_options[0].id
+      await setShippingMethod({ cartId, shippingMethodId: optionId })
+    }
+
+    // 3. Initiate Payment Session
+    const cart = await retrieveCart(cartId)
+    if (!cart) throw new Error("Cart not found")
+
+    if (region) {
+      const { payment_providers } = await sdk.client.fetch<HttpTypes.StorePaymentProviderListResponse>(
+        `/store/payment-providers`,
+        {
+          method: "GET",
+          query: { region_id: region.id },
+          headers,
+        }
+      )
+
+      if (payment_providers?.length > 0) {
+        const providerId = payment_providers[0].id
+        await sdk.store.payment.initiatePaymentSession(cart, { provider_id: providerId }, {}, headers)
+      }
+    }
+
+    // 4. Place Order
+    return await placeOrder(cartId)
+  } catch (e: any) {
+    if (e.message === "NEXT_REDIRECT") {
+      throw e
+    }
+    console.error("Checkout Action Error:", e)
+    return e.message
+  }
+}
+
 /**
  * Places an order for a cart. If no cart ID is provided, it will use the cart ID from the cookies.
  * @param cartId - optional - The ID of the cart to place an order for.
@@ -433,14 +517,11 @@ export async function placeOrder(cartId?: string) {
     .catch(medusaError)
 
   if (cartRes?.type === "order") {
-    const countryCode =
-      cartRes.order.shipping_address?.country_code?.toLowerCase()
-
     const orderCacheTag = await getCacheTag("orders")
     revalidateTag(orderCacheTag)
 
     removeCartId()
-    redirect(`/${countryCode}/order/${cartRes?.order.id}/confirmed`)
+    redirect(`/order/confirmed/${cartRes?.order.id}`)
   }
 
   return cartRes.cart

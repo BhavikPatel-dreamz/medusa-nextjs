@@ -54,6 +54,10 @@ export class WooCommerceAdapter implements ICommerceAdapter {
     throw new Error("Method not implemented.");
   }
 
+  async checkout(cartId: string): Promise<Order> {
+    throw new Error("Method not implemented.");
+  }
+
   async listOrders(customerId: string): Promise<Order[]> {
     return [];
   }

@@ -2,7 +2,7 @@ import { sdk } from "@lib/config";
 import { HttpTypes } from "@medusajs/types";
 import { getCacheOptions } from "@lib/data/cookies";
 import ProductCarousel from "./ProductCarousel";
-import { Product } from "@middleware/types/commerce.types";
+import { Product } from "@/middleware/types/commerce.types";
 
 async function getFeaturedProducts(limit = 12): Promise<Product[]> {
   const next = { ...(await getCacheOptions("products")) };

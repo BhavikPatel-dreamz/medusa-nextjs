@@ -3,8 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState, useCallback, useEffect } from "react";
-import { Product } from "@middleware/types/commerce.types";
+import { Product } from "@/middleware/types/commerce.types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { convertToLocale } from "@lib/util/money";
 
 interface ProductCarouselProps {
   title?: string;
@@ -13,14 +14,10 @@ interface ProductCarouselProps {
 
 function formatPrice(product: Product): string {
   const amount = product.price?.amount ?? product.variants?.[0]?.price;
-  const currency = product.price?.currency_code ?? product.variants?.[0]?.currency_code ?? "EUR";
+  const currency = product.price?.currency_code ?? product.variants?.[0]?.currency_code ?? "USD";
   if (!amount) return "";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount / 100);
+
+  return convertToLocale({ amount, currency_code: currency });
 }
 
 export default function ProductCarousel({ title = "You may also like:", products }: ProductCarouselProps) {

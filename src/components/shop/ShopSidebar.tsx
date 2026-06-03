@@ -3,6 +3,7 @@
 import { Range } from 'react-range';
 import { ProductCategory, ProductCollection } from '@/middleware/types/commerce.types';
 import { ShopFilters } from './ShopPage';
+import { convertToLocale } from "@lib/util/money";
 
 interface ShopSidebarProps {
   filters: ShopFilters;
@@ -10,6 +11,7 @@ interface ShopSidebarProps {
   categories: ProductCategory[];
   collections: ProductCollection[];
   priceMaxLimit: number;
+  currencyCode: string;
 }
 
 const AVAILABILITY = ['On Stock', 'Out of Stock'];
@@ -20,6 +22,7 @@ export default function ShopSidebar({
   categories,
   collections,
   priceMaxLimit,
+  currencyCode,
 }: ShopSidebarProps) {
   const toggle = (arr: string[], item: string): string[] =>
     arr.includes(item) ? arr.filter((i) => i !== item) : [...arr, item];
@@ -32,6 +35,9 @@ export default function ShopSidebar({
 
   const handleAvailability = (avail: string) =>
     onFiltersChange({ ...filters, availability: toggle(filters.availability, avail) });
+
+  const formattedMin = convertToLocale({ amount: filters.priceMin, currency_code: currencyCode });
+  const formattedMax = convertToLocale({ amount: filters.priceMax, currency_code: currencyCode });
 
   return (
     <aside className="w-[310px] min-w-[310px] px-[32px] py-[42px] bg-[#fafafa] border-r border-[#ececec] flex-shrink-0">
@@ -56,13 +62,12 @@ export default function ShopSidebar({
         </div>
       )}
 
-      {/* Price */}
+      {/* PRICE */}
       <div className="mb-12">
-        <h3 className="text-[13px] font-bold tracking-[0.14em] uppercase text-[#222] mb-[26px]">
-          Price
-        </h3>
+        <h3 className="text-[13px] font-bold tracking-[0.14em] uppercase text-[#222] mb-[26px]">Price</h3>
+
         <p className="text-[16px] text-[#666] mb-[18px]">
-          Price Range: ${filters.priceMin} - ${filters.priceMax}
+          Price Range: {formattedMin} - {formattedMax}
         </p>
         <Range
           step={1}
@@ -108,9 +113,10 @@ export default function ShopSidebar({
             );
           }}
         />
-        <div className="flex justify-between mt-4 text-[14px] text-[#888]">
-          <span>{filters.priceMin} $</span>
-          <span>{filters.priceMax} $</span>
+
+        <div className="flex justify-between mt-4 text-[#888] text-[14px]">
+          <span>{formattedMin}</span>
+          <span>{formattedMax}</span>
         </div>
       </div>
 

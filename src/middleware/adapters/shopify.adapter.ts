@@ -451,6 +451,10 @@ export class ShopifyAdapter implements ICommerceAdapter {
     return this.mapCart(result.cartLinesRemove.cart);
   }
 
+  async checkout(cartId: string): Promise<Order> {
+    throw new Error("Method not implemented.");
+  }
+
   async listOrders(customerId: string): Promise<Order[]> {
     // Requires Customer Access Token, skeleton for now
     return [];
