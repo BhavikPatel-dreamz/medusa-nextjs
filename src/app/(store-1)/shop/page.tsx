@@ -28,6 +28,8 @@ async function ShopContent({ searchParams }: { searchParams: any }) {
   const minPrice = searchParams.min_price ? parseInt(searchParams.min_price) : 0;
   const maxPrice = searchParams.max_price ? parseInt(searchParams.max_price) : 1500;
   const isPriceFiltered = searchParams.min_price || searchParams.max_price;
+  const isSortingByPrice = sortBy === "Price: Low to High" || sortBy === "Price: High to Low";
+  const isManualProcessing = isPriceFiltered || isSortingByPrice;
 
   // Initial query for categories and collections
   const filtersData = await adapter.getFilters();
@@ -35,17 +37,13 @@ async function ShopContent({ searchParams }: { searchParams: any }) {
   const collections = filtersData.collections;
 
   const query: any = {
-    limit: isPriceFiltered ? 100 : limit,
-    offset: isPriceFiltered ? 0 : (page - 1) * limit,
+    limit: isManualProcessing ? 100 : limit,
+    offset: isManualProcessing ? 0 : (page - 1) * limit,
   };
 
   // Map sort options to Medusa fields (only if not doing in-memory sort)
-  if (!isPriceFiltered) {
-    if (sortBy === "Price: Low to High") {
-      query.order = "variants.calculated_price.calculated_amount";
-    } else if (sortBy === "Price: High to Low") {
-      query.order = "-variants.calculated_price.calculated_amount";
-    } else if (sortBy === "Newest") {
+  if (!isManualProcessing) {
+    if (sortBy === "Newest") {
       query.order = "-created_at";
     }
   }
@@ -89,11 +87,13 @@ async function ShopContent({ searchParams }: { searchParams: any }) {
     let displayCount = totalCount;
 
     // Apply in-memory price filtering and sorting if needed
-    if (isPriceFiltered) {
-      displayProducts = products.filter(p => {
-        const price = getProductPrice(p);
-        return price >= minPrice && price <= maxPrice;
-      });
+    if (isManualProcessing) {
+      if (isPriceFiltered) {
+        displayProducts = products.filter(p => {
+          const price = getProductPrice(p);
+          return price >= minPrice && price <= maxPrice;
+        });
+      }
 
       // Apply in-memory sort
       if (sortBy === "Price: Low to High") {

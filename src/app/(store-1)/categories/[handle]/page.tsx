@@ -30,6 +30,8 @@ export default async function CategoryPage({
   const minPrice = sParams.min_price ? parseInt(sParams.min_price as string) : 0;
   const maxPrice = sParams.max_price ? parseInt(sParams.max_price as string) : 1500;
   const isPriceFiltered = sParams.min_price || sParams.max_price;
+  const isSortingByPrice = sortBy === "Price: Low to High" || sortBy === "Price: High to Low";
+  const isManualProcessing = isPriceFiltered || isSortingByPrice;
 
   const [categories, collectionsResult] = await Promise.all([
     adapter.listCategories(),
@@ -44,18 +46,14 @@ export default async function CategoryPage({
   if (!currentCategory) notFound();
 
   const query: any = {
-    limit: isPriceFiltered ? 100 : limit,
-    offset: isPriceFiltered ? 0 : (page - 1) * limit,
+    limit: isManualProcessing ? 100 : limit,
+    offset: isManualProcessing ? 0 : (page - 1) * limit,
     category_id: [currentCategory.id],
   };
 
   // Map sort (only if not doing in-memory sort)
-  if (!isPriceFiltered) {
-    if (sortBy === "Price: Low to High") {
-      query.order = "variants.calculated_price.calculated_amount";
-    } else if (sortBy === "Price: High to Low") {
-      query.order = "-variants.calculated_price.calculated_amount";
-    } else if (sortBy === "Newest") {
+  if (!isManualProcessing) {
+    if (sortBy === "Newest") {
       query.order = "-created_at";
     }
   }
@@ -85,11 +83,13 @@ export default async function CategoryPage({
     let displayCount = totalCount;
 
     // Apply in-memory price filtering and sorting if needed
-    if (isPriceFiltered) {
-      displayProducts = products.filter(p => {
-        const price = getProductPrice(p);
-        return price >= minPrice && price <= maxPrice;
-      });
+    if (isManualProcessing) {
+      if (isPriceFiltered) {
+        displayProducts = products.filter(p => {
+          const price = getProductPrice(p);
+          return price >= minPrice && price <= maxPrice;
+        });
+      }
 
       // Apply in-memory sort
       if (sortBy === "Price: Low to High") {
